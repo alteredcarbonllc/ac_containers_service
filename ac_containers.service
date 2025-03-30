@@ -1,0 +1,13 @@
+[Unit]
+Description=AC containers management service
+After=network.target
+Requires=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/start_ac_containers.sh --non-interactive
+ExecStop=/usr/bin/stop_ac_containers.sh --non-interactive
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

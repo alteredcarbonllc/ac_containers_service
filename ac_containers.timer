@@ -1,0 +1,9 @@
+[Unit]
+Description=Periodically restart AC containers
+
+[Timer]
+OnCalendar=*-*-* 01:00:00 UTC
+Unit=ac_containers.service
+
+[Install]
+WantedBy=timers.target
