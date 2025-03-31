@@ -5,7 +5,7 @@ export IPV4_1="${IPV4_1:-93.115.20.205}"
 export IPV6_1="${IPV6_1:-[2a0c:b9c0:f:433c::1]}"
 export CONTAINERS_NETWORK_NAME="${CONTAINERS_NETWORK_NAME:-ac_network}"
 
-export CERTS_CONTAINER_ETC_VOLUME="${CERTS_CONTAINER_ETC_VOLUME:-/root/podman_network/letsencrypt1}"
+export CERTS_CONTAINER_ETC_VOLUME="${CERTS_CONTAINER_ETC_VOLUME:-/var/volumes/data/letsencrypt_container_openmailserver.net/}"
 export LOG_VOLUMES_DIR="${LOG_VOLUMES_DIR:-/var/volumes/log}"
 export DATA_VOLUMES_DIR="${DATA_VOLUMES_DIR:-/var/volumes/data}"
 export PODMAN_BASE_DIR="${PODMAN_BASE_DIR:-/root/podman_network}"
