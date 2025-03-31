@@ -11,6 +11,7 @@ export DATA_VOLUMES_DIR="${DATA_VOLUMES_DIR:-/var/volumes/data}"
 export PODMAN_BASE_DIR="${PODMAN_BASE_DIR:-/root/podman_network}"
 
 export CONTAINERS_ETC_GIT="${CONTAINERS_ETC_GIT:-/root/git/containers_etc}"
+export POSTGRESQL_CONTAINER_NAME="${POSTGRESQL_CONTAINER_NAME:-postgresql_container_openmailserver.net}"
 export DOVECOT_CONTAINER_NAME="${DOVECOT_CONTAINER_NAME:-dovecot_container_openmailserver.net}"
 export POSTFIX_CONTAINER_NAME="${POSTFIX_CONTAINER_NAME:-postfix_container_openmailserver.net}"
 export NGINX_CONTAINER_NAME="${NGINX_CONTAINER_NAME:-nginx_container_openmailserver.net}"
@@ -71,7 +72,7 @@ podman run -d --replace \
     --ip6 fd00:10:89:1::219 \
     --mac-address ee:86:c4:0f:1c:e4 \
     -v "${PODMAN_BASE_DIR}/postgresql1/var/lib/postgresql/data:/var/lib/postgresql/data:Z" \
-    -v "${PODMAN_BASE_DIR}/postgresql1/var/log:/var/log:Z" \
+    -v "${LOG_VOLUMES_DIR}/${POSTGRESQL_CONTAINER_NAME}/var/log:/var/log:Z" \
     --restart always \
     localhost/postgresql_container > /tmp/podman_container_create.log 2>&1
 if [ $? -ne 0 ]; then
@@ -88,8 +89,8 @@ podman run -d --replace \
     --ip6 fd00:10:89:1::213 \
     --mac-address 1a:77:d8:6c:a6:ce \
     -v "${CONTAINERS_ETC_GIT}/${DOVECOT_CONTAINER_NAME}/etc/dovecot:/etc/dovecot:Z" \
-    -v "${PODMAN_BASE_DIR}/dovecot1/var/log:/var/log:Z" \
-    -v "${PODMAN_BASE_DIR}/postfix1/var/mail:/var/mail:Z" \
+    -v "${LOG_VOLUMES_DIR}/${DOVECOT_CONTAINER_NAME}/var/log:/var/log:Z" \
+    -v "${DATA_VOLUMES_DIR}/${DOVECOT_CONTAINER_NAME}/var/mail:/var/mail:Z" \
     -v "${CERTS_CONTAINER_ETC_VOLUME}/etc/letsencrypt:/etc/letsencrypt:Z" \
     -p "${DOVECOT_SERVER_IPV4}:993:993" \
     -p "${DOVECOT_SERVER_IPV4}:995:995" \
@@ -111,9 +112,8 @@ podman run -d --replace \
     --ip6 fd00:10:89:1::215 \
     --mac-address 1a:77:d8:6c:a6:ce \
     -v "${CONTAINERS_ETC_GIT}/${POSTFIX_CONTAINER_NAME}/etc/postfix:/etc/postfix:Z" \
-    -v "${DATA_VOLUMES_DIR}/${POSTFIX_CONTAINER_NAME}/var/spool/postfix:/var/spool/postfix:Z"\
     -v "${LOG_VOLUMES_DIR}/${POSTFIX_CONTAINER_NAME}/var/log:/var/log:Z" \
-    -v "${PODMAN_BASE_DIR}/postfix1/var/mail:/var/mail:Z" \
+    -v "${DATA_VOLUMES_DIR}/${DOVECOT_CONTAINER_NAME}/var/mail:/var/mail:Z" \
     -v "${CERTS_CONTAINER_ETC_VOLUME}/etc/letsencrypt:/etc/letsencrypt:Z" \
     -p "${POSTFIX_SERVER_IPV4}:25:25" \
     -p "${POSTFIX_SERVER_IPV4}:587:587" \
