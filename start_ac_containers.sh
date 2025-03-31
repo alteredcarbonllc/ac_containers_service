@@ -114,6 +114,7 @@ podman run -d --replace \
     -v "${CONTAINERS_ETC_GIT}/${POSTFIX_CONTAINER_NAME}/etc/postfix:/etc/postfix:Z" \
     -v "${LOG_VOLUMES_DIR}/${POSTFIX_CONTAINER_NAME}/var/log:/var/log:Z" \
     -v "${DATA_VOLUMES_DIR}/${DOVECOT_CONTAINER_NAME}/var/mail:/var/mail:Z" \
+    -v "${DATA_VOLUMES_DIR}/${POSTFIX_CONTAINER_NAME}/var/spool:/var/spool:Z" \
     -v "${CERTS_CONTAINER_ETC_VOLUME}/etc/letsencrypt:/etc/letsencrypt:Z" \
     -p "${POSTFIX_SERVER_IPV4}:25:25" \
     -p "${POSTFIX_SERVER_IPV4}:587:587" \
