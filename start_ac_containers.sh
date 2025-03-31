@@ -111,7 +111,8 @@ podman run -d --replace \
     --ip6 fd00:10:89:1::215 \
     --mac-address 1a:77:d8:6c:a6:ce \
     -v "${CONTAINERS_ETC_GIT}/${POSTFIX_CONTAINER_NAME}/etc/postfix:/etc/postfix:Z" \
-    -v "${PODMAN_BASE_DIR}/postfix1/var/log:/var/log:Z" \
+    -v "${DATA_VOLUMES_DIR}/${POSTFIX_CONTAINER_NAME}/var/spool/postfix:/var/spool/postfix:Z"\
+    -v "${LOG_VOLUMES_DIR}/${POSTFIX_CONTAINER_NAME}/var/log:/var/log:Z" \
     -v "${PODMAN_BASE_DIR}/postfix1/var/mail:/var/mail:Z" \
     -v "${CERTS_CONTAINER_ETC_VOLUME}/etc/letsencrypt:/etc/letsencrypt:Z" \
     -p "${POSTFIX_SERVER_IPV4}:25:25" \
@@ -163,9 +164,10 @@ podman run -d --replace \
     --ip6 fd00:10:89:1::221 \
     --mac-address 86:66:5b:a9:2f:c6 \
     -v "${CONTAINERS_ETC_GIT}/${EJABBERD_CONTAINER_NAME}/etc/ejabberd:/etc/ejabberd:Z" \
-    -v "${PODMAN_BASE_DIR}/ejabberd1/var/log:/var/log:Z" \
+    -v "${LOG_VOLUMES_DIR}/${EJABBERD_CONTAINER_NAME}/var/log:/var/log:Z" \
     -v "${CERTS_CONTAINER_ETC_VOLUME}/etc/letsencrypt:/etc/letsencrypt:Z" \
-    -v "${PODMAN_BASE_DIR}/ejabberd1/var/ejabberd_upload:/var/ejabberd_upload/:Z" \
+    -v "${DATA_VOLUMES_DIR}/${EJABBERD_CONTAINER_NAME}/var/ejabberd_upload:/var/ejabberd_upload/:Z" \
+    -v "${DATA_VOLUMES_DIR}/${EJABBERD_CONTAINER_NAME}/var/conversejs:/var/conversejs/:Z" \
     -p "${EJABBERD_SERVER_IPV4}:5222:5222" \
     -p "${EJABBERD_SERVER_IPV4}:5223:5223" \
     -p "${EJABBERD_SERVER_IPV4}:5269:5269" \
