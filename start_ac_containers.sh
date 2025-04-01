@@ -139,16 +139,23 @@ podman run -d --replace \
     --mac-address ce:a5:c4:01:f3:cb \
     -v "${CONTAINERS_ETC_GIT}/${NGINX_CONTAINER_NAME}/etc/nginx:/etc/nginx:Z" \
     -v "${CONTAINERS_ETC_GIT}/${NGINX_CONTAINER_NAME}/etc/php:/etc/php:Z" \
+    -v "${CONTAINERS_ETC_GIT}/${NGINX_CONTAINER_NAME}/etc/ssl/openssl.cnf:/etc/ssl/openssl.cnf:Z" \
     -v "${CONTAINERS_ETC_GIT}/${NGINX_CONTAINER_NAME}/usr/etc/:/usr/etc:Z" \
     -v "${DATA_VOLUMES_DIR}/${NGINX_CONTAINER_NAME}/var/www:/var/www:Z" \
     -v "${LOG_VOLUMES_DIR}/${NGINX_CONTAINER_NAME}/var/log/:/var/log/:Z" \
     -v "${CERTS_CONTAINER_ETC_VOLUME}/etc/letsencrypt:/etc/letsencrypt:Z" \
-    -p "${NGINX_SERVER_IPV4}:80:80" \
-    -p "${NGINX_SERVER_IPV4}:443:443" \
-    -p "${NGINX_SERVER_IPV4}:7777:7777" \
-    -p "${NGINX_SERVER_IPV6}:80:80" \
-    -p "${NGINX_SERVER_IPV6}:443:443" \
-    -p "${NGINX_SERVER_IPV6}:7777:7777" \
+    -p "${NGINX_SERVER_IPV4}:80:80/tcp" \
+    -p "${NGINX_SERVER_IPV4}:80:80/udp"
+    -p "${NGINX_SERVER_IPV4}:443:443/tcp" \
+    -p "${NGINX_SERVER_IPV4}:443:443/udp"
+    -p "${NGINX_SERVER_IPV4}:7777:7777/tcp" \
+    -p "${NGINX_SERVER_IPV4}:7777:7777/udp" \
+    -p "${NGINX_SERVER_IPV6}:80:80/tcp" \
+    -p "${NGINX_SERVER_IPV6}:80:80/udp" \
+    -p "${NGINX_SERVER_IPV6}:443:443/tcp" \
+    -p "${NGINX_SERVER_IPV6}:443:443/udp" \
+    -p "${NGINX_SERVER_IPV6}:7777:7777/tcp" \
+    -p "${NGINX_SERVER_IPV6}:7777:7777/udp" \
     --restart always \
     localhost/nginx_oqs_php_container:latest > /tmp/podman_container_create.log 2>&1
 if [ $? -ne 0 ]; then
