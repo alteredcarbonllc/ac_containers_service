@@ -145,9 +145,9 @@ podman run -d --replace \
     -v "${LOG_VOLUMES_DIR}/${NGINX_CONTAINER_NAME}/var/log/:/var/log/:Z" \
     -v "${CERTS_CONTAINER_ETC_VOLUME}/etc/letsencrypt:/etc/letsencrypt:Z" \
     -p "${NGINX_SERVER_IPV4}:80:80/tcp" \
-    -p "${NGINX_SERVER_IPV4}:80:80/udp"
+    -p "${NGINX_SERVER_IPV4}:80:80/udp" \
     -p "${NGINX_SERVER_IPV4}:443:443/tcp" \
-    -p "${NGINX_SERVER_IPV4}:443:443/udp"
+    -p "${NGINX_SERVER_IPV4}:443:443/udp" \
     -p "${NGINX_SERVER_IPV4}:7777:7777/tcp" \
     -p "${NGINX_SERVER_IPV4}:7777:7777/udp" \
     -p "${NGINX_SERVER_IPV6}:80:80/tcp" \
