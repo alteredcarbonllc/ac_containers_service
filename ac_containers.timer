@@ -2,7 +2,8 @@
 Description=Periodically restart AC containers
 
 [Timer]
-OnCalendar=*-*-* 01:00:00 UTC
+OnCalendar=*-*-* 01:00:00
+Timezone=UTC
 Unit=ac_containers.service
 
 [Install]

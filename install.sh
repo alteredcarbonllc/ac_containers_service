@@ -1,7 +1,8 @@
 #!/bin/bash
 
-if [ ! -f .env ]; then
-    echo "Error: .env file not found!" >&2
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [ ! -f "$SCRIPT_DIR/.env" ]; then
+    echo "Error: .env file not found next to the script!" >&2
     exit 1
 fi
 
