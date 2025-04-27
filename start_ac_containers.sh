@@ -26,6 +26,12 @@ export NGINX_SERVER_IPV6="${IPV6_1}"
 export EJABBERD_SERVER_IPV4="${IPV4_1}"
 export EJABBERD_SERVER_IPV6="${IPV6_1}"
 
+# Checking root rights
+if [[ $EUID -ne 0 ]]; then
+  echo "This script must be executed with root privileges."
+  exit 1
+fi
+
 NON_INTERACTIVE=false
 for arg in "$@"; do
     if [[ "$arg" == "--non-interactive" ]]; then

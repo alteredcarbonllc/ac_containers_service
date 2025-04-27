@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# Checking root rights
+if [[ $EUID -ne 0 ]]; then
+  echo "This script must be executed with root privileges."
+  exit 1
+fi
+
 # Array of container names
 CONTAINERS=( "postgresql1" "dovecot1" "postfix1" "nginx1" "ejabberd1" )
 
