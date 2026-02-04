@@ -1,0 +1,111 @@
+# Set environment variables if not already set in the environment
+export IPV4_1="${IPV4_1:-93.115.20.205}"
+export IPV6_1="${IPV6_1:-[2a0c:b9c0:f:433c::1]}"
+export CONTAINERS_NETWORK_NAME="${CONTAINERS_NETWORK_NAME:-ac_network}"
+
+export CERTS_CONTAINER_ETC_VOLUME="${CERTS_CONTAINER_ETC_VOLUME:-/var/volumes/data/letsencrypt_container_openmailserver.net/}"
+export LOG_VOLUMES_DIR="${LOG_VOLUMES_DIR:-/var/volumes/log}"
+export DATA_VOLUMES_DIR="${DATA_VOLUMES_DIR:-/var/volumes/data}"
+export PODMAN_BASE_DIR="${PODMAN_BASE_DIR:-/root/podman_network}"
+
+export CONTAINERS_ETC_GIT="${CONTAINERS_ETC_GIT:-/root/git/containers_etc}"
+export POSTGRESQL_CONTAINER_NAME="${POSTGRESQL_CONTAINER_NAME:-postgresql_container_openmailserver.net}"
+export DOVECOT_CONTAINER_NAME="${DOVECOT_CONTAINER_NAME:-dovecot_container_openmailserver.net}"
+export POSTFIX_CONTAINER_NAME="${POSTFIX_CONTAINER_NAME:-postfix_container_openmailserver.net}"
+export NGINX_CONTAINER_NAME="${NGINX_CONTAINER_NAME:-nginx_container_openmailserver.net}"
+export EJABBERD_CONTAINER_NAME="${EJABBERD_CONTAINER_NAME:-ejabberd_container_openmailserver.net}"
+
+export DOVECOT_SERVER_IPV4="${IPV4_1}"
+export DOVECOT_SERVER_IPV6="${IPV6_1}"
+export POSTFIX_SERVER_IPV4="${IPV4_1}"
+export POSTFIX_SERVER_IPV6="${IPV6_1}"
+export NGINX_SERVER_IPV4="${IPV4_1}"
+export NGINX_SERVER_IPV6="${IPV6_1}"
+export EJABBERD_SERVER_IPV4="${IPV4_1}"
+export EJABBERD_SERVER_IPV6="${IPV6_1}"
+
+{
+  "env": {
+    "CONTAINERS_ETC_GIT": "/root/git/containers_etc",
+    "VAR2": "value2",
+    "VAR3": "value3"
+  },
+  "containers": {
+    "postgresql_container_openmailserver.net": {
+      "name": "postgresql_container_openmailserver.net",
+      "image": "localhost/postgresql_container:latest",
+      "ip4": "10.89.1.219",
+      "ip6": "fd00:10:89:1::219",
+      "mac": "ee:86:c4:0f:1c:e4",
+      "volumes": [
+        { "source": "/root/podman_network/postgresql1/var/lib/postgresql/data", "target": "/var/lib/postgresql/data" },
+        { "source": "/var/volumes/log/postgresql_container_openmailserver.net/var/log", "target": "/var/log" }
+      ],
+      "ports": []
+    },
+    "dovecot_container_openmailserver.net": {
+      "name": "dovecot_container_openmailserver.net",
+      "image": "localhost/postgresql_container:latest",
+      "ip4": "10.89.1.219",
+      "ip6": "fd00:10:89:1::219",
+      "mac": "ee:86:c4:0f:1c:e4",
+      "volumes": [
+        { "source": "/root/podman_network/postgresql1/var/lib/postgresql/data", "target": "/var/lib/postgresql/data" },
+        { "source": "/var/volumes/log/postgresql_container_openmailserver.net/var/log", "target": "/var/log" }
+      ],
+      "ports": []
+    },
+    "postfix_container_openmailserver.net": {
+      "name": "postgresql_container_openmailserver.net",
+      "image": "localhost/postgresql_container:latest",
+      "ip4": "10.89.1.219",
+      "ip6": "fd00:10:89:1::219",
+      "mac": "ee:86:c4:0f:1c:e4",
+      "volumes": [
+        { "source": "/root/podman_network/postgresql1/var/lib/postgresql/data", "target": "/var/lib/postgresql/data" },
+        { "source": "/var/volumes/log/postgresql_container_openmailserver.net/var/log", "target": "/var/log" }
+      ],
+      "ports": []
+    },
+    "ejabberd_container_openmailserver.net": {
+      "name": "ejabberd_container_openmailserver.net",
+      "image": "localhost/ejabberd_container:latest",
+      "ip4": "10.89.1.219",
+      "ip6": "fd00:10:89:1::219",
+      "mac": "ee:86:c4:0f:1c:e4",
+      "volumes": [
+        { "source": "/root/podman_network/postgresql1/var/lib/postgresql/data", "target": "/var/lib/postgresql/data" },
+        { "source": "/var/volumes/log/postgresql_container_openmailserver.net/var/log", "target": "/var/log" }
+      ],
+      "ports": []
+    },
+    "nginx_container_openmailserver.net": {
+      "name": "nginx_container_openmailserver.net",
+      "image": "localhost/nginx_oqs_php_container:latest",
+      "ip4": "10.89.1.224",
+      "ip6": "fd00:10:89:1::224",
+      "mac": "ce:a5:c4:01:f3:cb",
+      "volumes": [
+        { "source": "/root/podman_network/redis1/data", "target": "/data" }
+      ],
+      "ports": [ "6379:6379" ]
+    }
+  },
+  "networks": {
+    "my_network": {
+      "driver": "bridge",
+      "subnet_ipv4": "10.89.1.0/24",
+      "subnet_ipv6": "fd00:10:89:1::/64",
+      "gateway_ipv4": "10.89.1.1",
+      "gateway_ipv6": "fd00:10:89:1::1"
+    },
+    "another_network": {
+      "driver": "bridge",
+      "subnet_ipv4": "192.168.1.0/24",
+      "subnet_ipv6": "fd00:192:168:1::/64",
+      "gateway_ipv4": "192.168.1.1",
+      "gateway_ipv6": "fd00:192:168:1::1"
+    }
+  }
+}
+

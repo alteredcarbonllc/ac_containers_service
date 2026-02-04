@@ -1,4 +1,112 @@
 #!/bin/bash
+set -euo pipefail
+
+CONFIG_FILE="/etc/ac_containers_service.json"
+LOG_FILE="/var/log/ac_containers_service.log"
+
+# Error handler
+error_handler() {
+    local exit_code=$?
+    local line_no=$1
+    echo "❌ Script error on line ${line_no}. Exit code: ${exit_code}" >&2
+    exit "${exit_code}"
+}
+
+# Setting up a trap
+trap 'error_handler $LINENO' ERR
+
+ensure_jq_installed() {
+    if ! command -v jq >/dev/null 2>&1; then
+        echo "⚙️ jq not found, trying to install..."
+
+        local installer=""
+        local update_cmd=""
+
+        if [ -f /etc/debian_version ]; then
+            installer="DEBIAN_FRONTEND=noninteractive apt-get install -yq jq"
+            update_cmd="DEBIAN_FRONTEND=noninteractive apt-get update -qq"
+        elif [ -f /etc/alpine-release ]; then
+            installer="apk add --no-cache jq"
+        elif [ -f /etc/redhat-release ]; then
+            installer="yum install -y -q jq"
+        else
+            echo "❌ Unknown system. Please install jq manually."
+            exit 1
+        fi
+
+        local prefix=""
+        if [ "$(id -u)" -ne 0 ]; then
+            prefix="sudo"
+        fi
+
+        # Update repositories (if necessary)
+        if [ -n "$update_cmd" ]; then
+            if $prefix bash -c "$update_cmd"; then
+                echo "✅ Repositories updated."
+            else
+                "⚠️ Failed to update repositories. Continue installation."
+            fi
+        fi
+
+        # Install jq
+        if $prefix bash -c "$installer"; then
+            echo "✅ jq installed successfully."
+        else
+            echo "❌ Error installing jq. Please install manually."
+            return 1
+        fi
+    fi
+}
+
+# Check config file
+check_config_file() {
+    if [ ! -f "$CONFIG_FILE" ]; then
+        echo "$(date '+%F %T') [ERROR] ❌ Конфігураційний файл $CONFIG_FILE не знайдено." | tee -a "$LOG_FILE"
+        exit 1
+    fi
+}
+
+# Checking root rights
+check_root() {
+    #if [[ "$$(id -u)" -ne 0 ]]; then \
+    if [[ $EUID -ne 0 ]]; then
+        echo -e "\033[1;31m❌ Error: This script must be run as root!❌\033[0m" >&2; \
+        exit 1; \
+    fi
+}
+
+# Function to query whether to continue or not in case of error
+ask_continue() {
+    if [ "$NON_INTERACTIVE" = false ]; then
+        read -p "An error has occurred. Do you want to continue running containers? (y/n): " answer
+        case "$choice" in
+            y|Y ) echo "Continuing the launch...";;
+            n|N ) echo "We are terminating execution."; exit 1;;
+            * ) echo "Incorrect choice, stopping execution."; exit 1;;
+        esac
+    else
+        echo "Error, script terminated in non-interactive mode."
+        exit 1
+    fi
+}
+
+# Основная функция скрипта
+main() {
+    echo "🚀 Скрипт запуска контейнеров..."
+
+    # Убедимся, что jq установлен
+    ensure_jq_installed
+
+    echo "✅ jq установлен. Продолжаем выполнение скрипта..."
+
+    # Здесь можно добавить код для запуска контейнеров или других задач
+    # Пример:
+    # docker run -d --name my_container my_image
+
+    echo "🚀 Контейнеры запущены!"
+}
+
+ensure_jq_installed
 
 # Set environment variables if not already set in the environment
 export IPV4_1="${IPV4_1:-93.115.20.205}"
@@ -26,33 +134,12 @@ export NGINX_SERVER_IPV6="${IPV6_1}"
 export EJABBERD_SERVER_IPV4="${IPV4_1}"
 export EJABBERD_SERVER_IPV6="${IPV6_1}"
 
-# Checking root rights
-if [[ $EUID -ne 0 ]]; then
-  echo "This script must be executed with root privileges."
-  exit 1
-fi
-
 NON_INTERACTIVE=false
 for arg in "$@"; do
     if [[ "$arg" == "--non-interactive" ]]; then
         NON_INTERACTIVE=true
     fi
 done
-
-# Function to query whether to continue or not in case of error
-ask_continue() {
-    if [ "$NON_INTERACTIVE" = false ]; then
-        read -p "An error has occurred. Do you want to continue running containers? (y/n): " answer
-        case "$choice" in
-            y|Y ) echo "Continuing the launch...";;
-            n|N ) echo "We are terminating execution."; exit 1;;
-            * ) echo "Incorrect choice, stopping execution."; exit 1;;
-        esac
-    else
-        echo "Error, script terminated in non-interactive mode."
-        exit 1
-    fi
-}
 
 # Check if the network exists. If not, create it.
 if ! podman network inspect ac_network > /dev/null 2>&1; then
@@ -136,39 +223,39 @@ if [ $? -ne 0 ]; then
     ask_continue
 fi
 
-echo "Starting NGINX container..."
-podman run -d --replace \
-    --name nginx1 \
-    --network "${CONTAINERS_NETWORK_NAME}" \
-    --ip 10.89.1.224 \
-    --ip6 fd00:10:89:1::224 \
-    --mac-address ce:a5:c4:01:f3:cb \
-    -v "${CONTAINERS_ETC_GIT}/${NGINX_CONTAINER_NAME}/etc/nginx:/etc/nginx:Z" \
-    -v "${CONTAINERS_ETC_GIT}/${NGINX_CONTAINER_NAME}/etc/php:/etc/php:Z" \
-    -v "${CONTAINERS_ETC_GIT}/${NGINX_CONTAINER_NAME}/etc/ssl/openssl.cnf:/etc/ssl/openssl.cnf:Z" \
-    -v "${CONTAINERS_ETC_GIT}/${NGINX_CONTAINER_NAME}/usr/etc/:/usr/etc:Z" \
-    -v "${DATA_VOLUMES_DIR}/${NGINX_CONTAINER_NAME}/var/www:/var/www:Z" \
-    -v "${LOG_VOLUMES_DIR}/${NGINX_CONTAINER_NAME}/var/log/:/var/log/:Z" \
-    -v "${CERTS_CONTAINER_ETC_VOLUME}/etc/letsencrypt:/etc/letsencrypt:Z" \
-    -p "${NGINX_SERVER_IPV4}:80:80/tcp" \
-    -p "${NGINX_SERVER_IPV4}:80:80/udp" \
-    -p "${NGINX_SERVER_IPV4}:443:443/tcp" \
-    -p "${NGINX_SERVER_IPV4}:443:443/udp" \
-    -p "${NGINX_SERVER_IPV4}:7777:7777/tcp" \
-    -p "${NGINX_SERVER_IPV4}:7777:7777/udp" \
-    -p "${NGINX_SERVER_IPV6}:80:80/tcp" \
-    -p "${NGINX_SERVER_IPV6}:80:80/udp" \
-    -p "${NGINX_SERVER_IPV6}:443:443/tcp" \
-    -p "${NGINX_SERVER_IPV6}:443:443/udp" \
-    -p "${NGINX_SERVER_IPV6}:7777:7777/tcp" \
-    -p "${NGINX_SERVER_IPV6}:7777:7777/udp" \
-    --restart always \
-    localhost/nginx_oqs_php_container:latest > /tmp/podman_container_create.log 2>&1
-if [ $? -ne 0 ]; then
-    echo "Error creating container. Details:"
-    cat /tmp/podman_container_create.log
-    ask_continue
-fi
+#echo "Starting NGINX container..."
+#podman run -d --replace \
+#    --name nginx1 \
+#    --network "${CONTAINERS_NETWORK_NAME}" \
+#    --ip 10.89.1.224 \
+#    --ip6 fd00:10:89:1::224 \
+#    --mac-address ce:a5:c4:01:f3:cb \
+#    -v "${CONTAINERS_ETC_GIT}/${NGINX_CONTAINER_NAME}/etc/nginx:/etc/nginx:Z" \
+#    -v "${CONTAINERS_ETC_GIT}/${NGINX_CONTAINER_NAME}/etc/php:/etc/php:Z" \
+#    -v "${CONTAINERS_ETC_GIT}/${NGINX_CONTAINER_NAME}/etc/ssl/openssl.cnf:/etc/ssl/openssl.cnf:Z" \
+#    -v "${CONTAINERS_ETC_GIT}/${NGINX_CONTAINER_NAME}/usr/etc/:/usr/etc:Z" \
+#    -v "${DATA_VOLUMES_DIR}/${NGINX_CONTAINER_NAME}/var/www:/var/www:Z" \
+#    -v "${LOG_VOLUMES_DIR}/${NGINX_CONTAINER_NAME}/var/log/:/var/log/:Z" \
+#    -v "${CERTS_CONTAINER_ETC_VOLUME}/etc/letsencrypt:/etc/letsencrypt:Z" \
+#    -p "${NGINX_SERVER_IPV4}:80:80/tcp" \
+#    -p "${NGINX_SERVER_IPV4}:80:80/udp" \
+#    -p "${NGINX_SERVER_IPV4}:443:443/tcp" \
+#    -p "${NGINX_SERVER_IPV4}:443:443/udp" \
+#    -p "${NGINX_SERVER_IPV4}:7777:7777/tcp" \
+#    -p "${NGINX_SERVER_IPV4}:7777:7777/udp" \
+#    -p "${NGINX_SERVER_IPV6}:80:80/tcp" \
+#    -p "${NGINX_SERVER_IPV6}:80:80/udp" \
+#    -p "${NGINX_SERVER_IPV6}:443:443/tcp" \
+#    -p "${NGINX_SERVER_IPV6}:443:443/udp" \
+#    -p "${NGINX_SERVER_IPV6}:7777:7777/tcp" \
+#    -p "${NGINX_SERVER_IPV6}:7777:7777/udp" \
+#    --restart always \
+#    localhost/nginx_oqs_php_container:latest > /tmp/podman_container_create.log 2>&1
+#if [ $? -ne 0 ]; then
+#    echo "Error creating container. Details:"
+#    cat /tmp/podman_container_create.log
+#    ask_continue
+#fi
 
 echo "Starting Ejabberd container..."
 podman run -d --replace \
@@ -205,3 +292,6 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "All containers launched!"
+
+# Starting
+main "$@"
